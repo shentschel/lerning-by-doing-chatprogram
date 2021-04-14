@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using CommunicationLibrary.Actions;
+using CommunicationLibrary.Events.Server;
 using CommunicationLibrary.Models;
 using CommunicationLibrary.Packets;
 using CommunicationLibrary.Payloads.Client;
@@ -19,6 +20,8 @@ namespace CommunicationLibrary
         public event EventHandler<User> UserLeave;
         public event EventHandler ServerStop;
         public event EventHandler ServerStart;
+        public event EventHandler<ReceivedMessageEventArgs> ReceivedMessage;
+        public event EventHandler<ReceivedMessageToEventArgs> ReceivedMessageTo;
         
         private string Ip { get; }
         private int Port { get; }
@@ -73,6 +76,29 @@ namespace CommunicationLibrary
         {
             ServerStart?.Invoke(this, EventArgs.Empty);
         }
+
+        private void InvokeReceivedMessageEvent(User sender, string message)
+        {
+            var args = new ReceivedMessageEventArgs
+            {
+                Sender = sender,
+                Message = message
+            };
+            
+            ReceivedMessage?.Invoke(this, args);
+        } 
+        
+        private void InvokeReceivedMessageToEvent(User sender, string message, User recipient)
+        {
+            var args = new ReceivedMessageToEventArgs
+            {
+                Sender = sender,
+                Recipient = recipient,
+                Message = message
+            };
+            
+            ReceivedMessageTo?.Invoke(this, args);
+        } 
         #endregion
         
         #region Event Handling
@@ -236,6 +262,7 @@ namespace CommunicationLibrary
             var clientPacket = new ClientPacket(ClientAction.ReceiveMessage, messagePayload);
             
             SendToAllUsers(clientPacket);
+            InvokeReceivedMessageEvent(sender, payload.Message);
         }
 
         private void SendMessageTo(string ipPort, SendMessageToPayload payload)
@@ -250,6 +277,7 @@ namespace CommunicationLibrary
             var clientPacket = new ClientPacket(ClientAction.ReceiveMessage, messagePayload);
 
             _server.SendAsync(recipient.IpPort, clientPacket.ToJson());
+            InvokeReceivedMessageToEvent(sender, payload.Message, recipient);
         }
 
         #endregion

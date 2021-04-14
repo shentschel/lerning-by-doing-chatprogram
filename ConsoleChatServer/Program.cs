@@ -3,8 +3,8 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
-using System.Threading;
 using CommunicationLibrary;
+using CommunicationLibrary.Events.Server;
 using CommunicationLibrary.Models;
 using log4net;
 using log4net.Config;
@@ -18,15 +18,14 @@ namespace ConsoleChatServer
             var logRepository = LogManager.GetRepository(Assembly.GetEntryAssembly());
             XmlConfigurator.Configure(logRepository, new FileInfo("log4net.config"));
             
-            string ip = GetIpAddress();
+            var ip = GetIpAddress();
             Console.WriteLine($"Using IP-Address: {ip}");
 
             var port = 0;
-            var portString = "";
             while (!(port > 1024 && port < 65536))
             {
                 Console.WriteLine("Please insert Port on which the server shall listen (1025-65535):");
-                portString = Console.ReadLine();
+                var portString = Console.ReadLine();
                 port = int.Parse(portString ?? "1024");
             }
 
@@ -35,6 +34,8 @@ namespace ConsoleChatServer
             server.ServerStop += ServerStopHandler;
             server.UserJoin += UserJoinHandler;
             server.UserLeave += UserLeaveHandler;
+            server.ReceivedMessage += ReceivedMessageHandler;
+            server.ReceivedMessageTo += ReceivedMessageToHandler;
             
             server.StartServer();
 
@@ -46,6 +47,16 @@ namespace ConsoleChatServer
             
             server.StopServer();
             Environment.Exit(0);
+        }
+
+        private static void ReceivedMessageHandler(object sender, ReceivedMessageEventArgs e)
+        {
+            WriteTimedMessage($"'{e.Sender.Name}' sent the message '{e.Message}'");
+        }
+        
+        private static void ReceivedMessageToHandler(object sender, ReceivedMessageToEventArgs e)
+        {
+            WriteTimedMessage($"'{e.Sender.Name}' sent to '{e.Recipient.Name}' the message '{e.Message}'");
         }
 
         private static void UserLeaveHandler(object sender, User e)
@@ -75,9 +86,10 @@ namespace ConsoleChatServer
 
         private static string GetIpAddress()
         {
-            using Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            using var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             socket.Connect("8.8.8.8", 65530);
-            IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
+            var endPoint = socket.LocalEndPoint as IPEndPoint;
+            
             return endPoint?.Address.ToString();
         }
     }
