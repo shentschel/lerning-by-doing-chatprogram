@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -13,6 +15,9 @@ namespace ConsoleChatServer
 {
     class Program
     {
+
+        private static readonly List<User> Users = new List<User>();
+        
         static void Main(string[] args)
         {
             var logRepository = LogManager.GetRepository(Assembly.GetEntryAssembly());
@@ -28,7 +33,8 @@ namespace ConsoleChatServer
                 var portString = Console.ReadLine();
                 port = int.Parse(portString ?? "1024");
             }
-
+            
+            
             var server = new ChatServer(ip, port);
             server.ServerStart += ServerStartHandler;
             server.ServerStop += ServerStopHandler;
@@ -36,13 +42,16 @@ namespace ConsoleChatServer
             server.UserLeave += UserLeaveHandler;
             server.ReceivedMessage += ReceivedMessageHandler;
             server.ReceivedMessageTo += ReceivedMessageToHandler;
-            
             server.StartServer();
+
+            ServerManager manager = new ServerManager(ip, port);
 
             var command = "";
             while (!command.ToLower().Equals("exit"))
             {
                 command = Console.ReadLine() ?? "";
+                if (!command.ToLower().StartsWith("kick")) continue;
+                manager.HandleCommand(command);
             }
             
             server.StopServer();
@@ -61,11 +70,17 @@ namespace ConsoleChatServer
 
         private static void UserLeaveHandler(object sender, User e)
         {
-            WriteTimedMessage($"User '{e.Name}' left the server.");
+            
+            var foundUser = Users.Find(user => user.Id == e.Id);
+            if (foundUser == null) return;
+
+            Users.Remove(foundUser);
+            WriteTimedMessage($"User '{foundUser.Name}' left the server.");
         }
 
         private static void UserJoinHandler(object sender, User e)
         {
+            Users.Add(e);
             WriteTimedMessage($"User '{e.Name}' joined the server.");
         }
 
@@ -73,16 +88,17 @@ namespace ConsoleChatServer
         {
             WriteTimedMessage("Server stopped.");
         }
-
+        
+        private static void ServerStartHandler(object sender, EventArgs e)
+        {
+            WriteTimedMessage("Server started.");
+        }
+        
         private static void WriteTimedMessage(string message)
         {
             Console.WriteLine($"[{DateTime.Now}] {message}");
         }
 
-        private static void ServerStartHandler(object sender, EventArgs e)
-        {
-            WriteTimedMessage("Server started.");
-        }
 
         private static string GetIpAddress()
         {

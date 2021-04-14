@@ -264,5 +264,16 @@ namespace CommunicationLibrary
             var serverPacket = new ServerPacket(ServerAction.SendMessage, payload);
             _client.SendAsync(serverPacket.ToJson());
         }
+
+        public void KickUser(Guid userId, string reason)
+        {
+            var foundUser = Users.Find(user => user.Id == userId);
+            if (foundUser == null) return;
+
+            var payload = new KickPayload(foundUser.Id, reason);
+            var serverPacket = new ServerPacket(ServerAction.Kick, payload);
+
+            _client.SendAsync(serverPacket.ToJson());
+        }
     }
 }
