@@ -11,7 +11,7 @@ using WatsonTcp;
 
 namespace CommunicationLibrary
 {
-    public class ChatServer
+    public sealed class ChatServer
     {
         private static readonly ILog Logger = LogManager.GetLogger(typeof(ChatServer));
 
@@ -53,22 +53,23 @@ namespace CommunicationLibrary
         }
 
         #region Event Invokation
-        protected virtual void InvokeUserJoinEvent(User user)
+
+        private void InvokeUserJoinEvent(User user)
         {
             UserJoin?.Invoke(this, user);
         }
 
-        protected virtual void InvokeUserLeaveEvent(User user)
+        private void InvokeUserLeaveEvent(User user)
         {
             UserLeave?.Invoke(this, user);
         }
 
-        protected virtual void InvokeServerStopEvent()
+        private void InvokeServerStopEvent()
         {
             ServerStop?.Invoke(this, EventArgs.Empty);
         }
 
-        protected virtual void InvokeServerStartEvent()
+        private void InvokeServerStartEvent()
         {
             ServerStart?.Invoke(this, EventArgs.Empty);
         }

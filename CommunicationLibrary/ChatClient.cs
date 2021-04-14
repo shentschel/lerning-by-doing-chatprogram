@@ -13,7 +13,7 @@ using WatsonTcp;
 
 namespace CommunicationLibrary
 {
-    public class ChatClient
+    public sealed class ChatClient
     {
         private static readonly ILog Logger = LogManager.GetLogger(typeof(ChatClient));
 
@@ -22,8 +22,8 @@ namespace CommunicationLibrary
         public event EventHandler ServerJoin;
         public event EventHandler<User> UserJoin;
         public event EventHandler<User> UserLeave;
-        public event EventHandler UserKick;
-        public event EventHandler IncomingMessage;
+        public event EventHandler<KickedUserEventArgs> UserKick;
+        public event EventHandler<IncomingMessageEventArgs> IncomingMessage;
         public event EventHandler<List<User>> NewUserList;
 
         private string Ip { get; }
@@ -58,32 +58,32 @@ namespace CommunicationLibrary
 
         #region Event Invokation
 
-        protected virtual void InvokeServerConnectEvent()
+        private void InvokeServerConnectEvent()
         {
             ServerConnect?.Invoke(this, EventArgs.Empty);
         }
 
-        protected virtual void InvokeServerDisconnectEvent()
+        private void InvokeServerDisconnectEvent()
         {
             ServerDisconnect?.Invoke(this, EventArgs.Empty);
         }
 
-        protected virtual void InvokeServerJoinEvent()
+        private void InvokeServerJoinEvent()
         {
             ServerJoin?.Invoke(this, EventArgs.Empty);
         }
 
-        protected virtual void InvokeUserJoinEvent(User user)
+        private void InvokeUserJoinEvent(User user)
         {
             UserJoin?.Invoke(this, user);
         }
 
-        protected virtual void InvokeUserLeaveEvent(User user)
+        private void InvokeUserLeaveEvent(User user)
         {
             UserLeave?.Invoke(this, user);
         }
 
-        protected virtual void InvokeUserKickEvent(User kickedBy, User kickedUser, string reason)
+        private void InvokeUserKickEvent(User kickedBy, User kickedUser, string reason)
         {
             var eventArgs = new KickedUserEventArgs
             {
@@ -95,7 +95,7 @@ namespace CommunicationLibrary
             UserKick?.Invoke(this, eventArgs);
         }
 
-        protected virtual void InvokeIncomingMessageEvent(User sender, string message)
+        private void InvokeIncomingMessageEvent(User sender, string message)
         {
             var eventArgs = new IncomingMessageEventArgs
             {
@@ -106,7 +106,7 @@ namespace CommunicationLibrary
             IncomingMessage?.Invoke(this, eventArgs);
         }
 
-        protected virtual void InvokeNewUserListEvent(List<User> users)
+        private void InvokeNewUserListEvent(List<User> users)
         {
             NewUserList?.Invoke(this, users);
         }
@@ -239,7 +239,10 @@ namespace CommunicationLibrary
 
             var payload = new JoinPayload(user.Name, user.Color);
             var serverPacket = new ServerPacket(ServerAction.Join, payload);
+            
+            _client.Connect();
             _client.SendAsync(serverPacket.ToJson());
+            InvokeServerJoinEvent();
         }
 
         public void LeaveServer()

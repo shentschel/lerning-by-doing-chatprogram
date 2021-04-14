@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunicationLibrary", "Com
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleChatClient", "ConsoleChatClient\ConsoleChatClient.csproj", "{A353815D-9221-4D65-A48A-713009418D40}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleChatServer", "ConsoleChatServer\ConsoleChatServer.csproj", "{DA56B9FA-B68C-4EDF-9AAA-4F48E7C7A3FE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{A353815D-9221-4D65-A48A-713009418D40}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A353815D-9221-4D65-A48A-713009418D40}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A353815D-9221-4D65-A48A-713009418D40}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA56B9FA-B68C-4EDF-9AAA-4F48E7C7A3FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA56B9FA-B68C-4EDF-9AAA-4F48E7C7A3FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA56B9FA-B68C-4EDF-9AAA-4F48E7C7A3FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA56B9FA-B68C-4EDF-9AAA-4F48E7C7A3FE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
